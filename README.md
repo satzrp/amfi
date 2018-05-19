@@ -1,15 +1,18 @@
 # AMFI - Utility package to get latest NAV data from AMFI
+[![Documentation](https://godoc.org/github.com/LordOfSati/amfi?status.svg)](http://godoc.org/github.com/LordOfSati/amfi)
+[![Go Report Card](https://goreportcard.com/badge/github.com/LordOfSati/amfi)](https://goreportcard.com/report/github.com/LordOfSati/amfi)
+[![Build](https://travis-ci.com/LordOfSati/amfi.svg?branch=master)](https://travis-ci.com/LordOfSati/amfi.svg?branch=master)
 
 A small utility package to fetch latest NAV(Net Asset Value) of Indian mutual funds published by AMFI.
 
-DISCLAIMER: The package depends completely on the data published by AMFI.
+Disclaimer: The package depends completely on the data published by AMFI.
 
-## Adding to your project
+### Adding to your project
 ```sh
 go get github.com/LordOfSati/amfi
 ```
 
-## Usage
+### Usage
 ```go
 import "github.com/LordOfSati/amfi"
 
@@ -25,7 +28,7 @@ func main() {
   }
 }
 ```
-## Sample Fund Details in JSON format
+### Sample Fund Details in JSON format
 ```json
 {
   "code": "120518",
