@@ -1,6 +1,7 @@
 package amfi
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -36,16 +37,14 @@ const navURL = "https://www.amfiindia.com/spages/NAVAll.txt"
 
 // Load the latest nav data from internet (amfi india server)
 func (amfi *AMFI) Load() error {
-	var httpClient = amfi.HTTPClient
-	if httpClient == nil {
-		httpClient = http.DefaultClient
+	if amfi.HTTPClient == nil {
+		amfi.HTTPClient = http.DefaultClient
 	}
 	request, err := http.NewRequest(http.MethodGet, navURL, nil)
 	if err != nil {
 		return err
 	}
-	request.Header.Set("User-Agent", "go-amfi-client")
-	response, err := httpClient.Do(request)
+	response, err := amfi.HTTPClient.Do(request)
 	if err != nil {
 		return err
 	}
@@ -55,6 +54,7 @@ func (amfi *AMFI) Load() error {
 		return err
 	}
 	amfi.processNavLines(string(data))
+	amfi.lastUpdated = time.Now()
 	return nil
 }
 
@@ -78,7 +78,7 @@ func (amfi *AMFI) processNavLines(data string) {
 				skipHeader = true
 				continue
 			}
-			// building slice of Fund from ; separated lines
+			// building Fund object from ; separated lines
 			fund := amfi.buildFund(line, currentType, currentManager)
 			amfi.funds[fund.Code] = fund
 		} else {
@@ -91,7 +91,7 @@ func (amfi *AMFI) processNavLines(data string) {
 			}
 		}
 	}
-	// removing duplicate items from fund houses list
+	// remove duplicate items from fund houses list and assign
 	amfi.fundHouses = append(amfi.fundHouses, removeDuplicates(tempFundHouses)...)
 }
 
@@ -128,14 +128,27 @@ func (amfi *AMFI) GetFundHouses() []string {
 	return amfi.fundHouses
 }
 
-// GetFunds returns the map of mutual funds with its latest nav data (SchemeCode as key, and Fund as value)
-func (amfi *AMFI) GetFunds() map[string]Fund {
-	return amfi.funds
+// GetFunds returns a list of mutual funds with its latest nav data
+func (amfi *AMFI) GetFunds() []Fund {
+	var funds []Fund
+	for _, fund := range amfi.funds {
+		funds = append(funds, fund)
+	}
+	return funds
 }
 
 // GetFund returns the fund details for the give SchemeCode
-func (amfi *AMFI) GetFund(schemeCode string) Fund {
-	return amfi.funds[schemeCode]
+func (amfi *AMFI) GetFund(schemeCode string) (Fund, error) {
+	fund, exists := amfi.funds[schemeCode]
+	if exists {
+		return fund, nil
+	}
+	return fund, errors.New("Invalid Code")
+}
+
+// GetLastUpdatedTime returns the last updated timestamp of nav data
+func (amfi *AMFI) GetLastUpdatedTime() time.Time {
+	return amfi.lastUpdated
 }
 
 // utility function to remove duplicate values in a string slice
