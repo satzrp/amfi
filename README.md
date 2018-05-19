@@ -25,3 +25,18 @@ func main() {
   }
 }
 ```
+## Sample Fund Details in JSON format
+```json
+{
+  "code": "120518",
+  "name": "Aditya Birla Sun Life Balanced '95 Fund - Direct Plan-Dividend",
+  "isin": "INF209KA1LH3",
+  "isinReinvestment": "INF209K01ZB2",
+  "type": "Open Ended Schemes(Balanced)",
+  "house": "Aditya Birla Sun Life Mutual Fund",
+  "nav": 207.77,
+  "repurchaseValue": 205.69,
+  "salePrice": 207.77,
+  "date": "18-May-2018"
+}
+```

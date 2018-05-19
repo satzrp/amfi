@@ -21,7 +21,7 @@ type Fund struct {
 	Isin             string  `json:"isin"`
 	IsinReinvestment string  `json:"isinReinvestment"`
 	Type             string  `json:"type"`
-	Manager          string  `json:"manager"`
+	House            string  `json:"house"`
 	NetAssetValue    float64 `json:"nav"`
 	RepurchaseValue  float64 `json:"repurchaseValue"`
 	SalePrice        float64 `json:"salePrice"`
@@ -68,10 +68,10 @@ func (amfi *AMFI) Load() error {
 // function to process the lines and categorize different types of lines
 func (amfi *AMFI) processNavLines(data string) {
 	var (
-		tempFundHouses []string
-		currentManager string
-		currentType    string
-		skipHeader     bool
+		tempFundHouses   []string
+		currentFundHouse string
+		currentType      string
+		skipHeader       bool
 	)
 	amfi.funds = make(map[string]Fund)
 	for _, line := range strings.Split(data, "\r\n") {
@@ -87,14 +87,14 @@ func (amfi *AMFI) processNavLines(data string) {
 				continue
 			}
 			// building Fund object from ; separated lines
-			fund := amfi.buildFund(line, currentType, currentManager)
+			fund := amfi.buildFund(line, currentType, currentFundHouse)
 			amfi.funds[fund.Code] = fund
 		} else {
 			if strings.HasPrefix(line, "Open Ended") || strings.HasPrefix(line, "Close Ended") {
 				currentType = line
 				amfi.fundCategories = append(amfi.fundCategories, line)
 			} else {
-				currentManager = line
+				currentFundHouse = line
 				tempFundHouses = append(tempFundHouses, line)
 			}
 		}
@@ -104,7 +104,7 @@ func (amfi *AMFI) processNavLines(data string) {
 }
 
 // function to parse the nav lines
-func (amfi *AMFI) buildFund(line, currentType, currentManager string) Fund {
+func (amfi *AMFI) buildFund(line, currentType, currentFundHouse string) Fund {
 	values := strings.Split(line, ";")
 	var fund Fund
 	fund.Code = values[0]
@@ -121,7 +121,7 @@ func (amfi *AMFI) buildFund(line, currentType, currentManager string) Fund {
 		fund.SalePrice = salePrice
 	}
 	fund.Date = values[7]
-	fund.Manager = currentManager
+	fund.House = currentFundHouse
 	fund.Type = currentType
 	return fund
 }
