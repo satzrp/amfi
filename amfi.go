@@ -1,3 +1,8 @@
+// Package amfi ..
+//
+// A small utility package to fetch latest NAV(Net Asset Value) of Indian mutual funds published by AMFI.
+//
+// DISCLAIMER: The package depends completely on the data published by AMFI.
 package amfi
 
 import (
@@ -23,8 +28,9 @@ type Fund struct {
 	Date             string  `json:"date"`
 }
 
-// AMFI includes functions to load nav data from internet, get the list of funds and fund houses
-// custom HTTPClient can be used,based on the requirements
+// AMFI includes functions to load nav data from internet, get the list of funds and fund houses.
+//
+// Custom HTTPClient can also be used, based on the requirements
 type AMFI struct {
 	HTTPClient     *http.Client
 	funds          map[string]Fund
@@ -33,9 +39,10 @@ type AMFI struct {
 	lastUpdated    time.Time
 }
 
+// AMFI url to fetch latest nav data
 const navURL = "https://www.amfiindia.com/spages/NAVAll.txt"
 
-// Load the latest nav data from internet (amfi india server)
+// Load the latest nav data from internet (amfi server: https://www.amfiindia.com/spages/NAVAll.txt)
 func (amfi *AMFI) Load() error {
 	if amfi.HTTPClient == nil {
 		amfi.HTTPClient = http.DefaultClient
@@ -69,6 +76,7 @@ func (amfi *AMFI) processNavLines(data string) {
 	amfi.funds = make(map[string]Fund)
 	for _, line := range strings.Split(data, "\r\n") {
 		line = strings.TrimSpace(line)
+		// to skip the empty lines
 		if len(line) == 0 {
 			continue
 		}
@@ -137,7 +145,9 @@ func (amfi *AMFI) GetFunds() []Fund {
 	return funds
 }
 
-// GetFund returns the fund details for the give SchemeCode
+// GetFund returns fund details for the given SchemeCode.
+//
+// Returns an error ("Invalid Code"), if the input schemeCode is invalid
 func (amfi *AMFI) GetFund(schemeCode string) (Fund, error) {
 	fund, exists := amfi.funds[schemeCode]
 	if exists {
@@ -146,7 +156,7 @@ func (amfi *AMFI) GetFund(schemeCode string) (Fund, error) {
 	return fund, errors.New("Invalid Code")
 }
 
-// GetLastUpdatedTime returns the last updated timestamp of nav data
+// GetLastUpdatedTime returns the timestamp of data fetched from the internet
 func (amfi *AMFI) GetLastUpdatedTime() time.Time {
 	return amfi.lastUpdated
 }
